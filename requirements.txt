@@ -3,5 +3,5 @@ transformers==4.44.2
 huggingface-hub==0.24.6
 sentencepiece==0.2.0
 protobuf==5.28.0
-ratatosk-errands==0.4
+ratatosk-errands==0.5
 loguru==0.7.2
