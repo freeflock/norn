@@ -6,10 +6,10 @@ from transformers import AutoTokenizer, LlamaForCausalLM, BitsAndBytesConfig
 class Hermes3Chat:
     def __init__(self):
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "NousResearch/Hermes-3-Llama-3.1-8B",
+            "NousResearch/Hermes-3-Llama-3.1-70B",
             trust_remote_code=True)
         self.model = LlamaForCausalLM.from_pretrained(
-            "NousResearch/Hermes-3-Llama-3.1-8B",
+            "NousResearch/Hermes-3-Llama-3.1-70B",
             torch_dtype=torch.float16,
             device_map="auto",
             quantization_config=BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_compute_dtype=torch.bfloat16),
