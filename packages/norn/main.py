@@ -19,7 +19,19 @@ GALLERY_HOST = os.getenv("GALLERY_HOST")
 GALLERY_PORT = int(os.getenv("GALLERY_PORT"))
 GALLERY_KEY = os.getenv("GALLERY_KEY")
 
-model: StableDiffusion3TextToImage | StableDiffusion3ImageToImage | Hermes3Chat | None = None
+MODEL_TYPE = os.getenv("MODEL_TYPE")
+logger.info(f"( ) initializing model: {MODEL_TYPE}")
+diffusion_model: StableDiffusion3TextToImage | StableDiffusion3ImageToImage | None = None
+language_model: Hermes3Chat | None = None
+if MODEL_TYPE == "diffusion":
+    diffusion_model = StableDiffusion3TextToImage()
+    language_model = None
+elif MODEL_TYPE == "language":
+    diffusion_model = None
+    language_model = Hermes3Chat()
+else:
+    raise ValueError(f"invalid model type specified in MODEL_TYPE env var: {MODEL_TYPE}")
+logger.info(f"(*) initialized model")
 
 
 def upload_image_to_gallery(image_name: str, image: Image):
@@ -33,31 +45,40 @@ def upload_image_to_gallery(image_name: str, image: Image):
         raise RuntimeError(f"bad status code from gallery upload: {response.status_code}")
 
 
-def receive_errand(ch, method, properties, body):
-    global model
+def receive_language_errand(ch, method, properties, body):
+    try:
+        logger.info(f"( ) starting errand: {body}")
+        errand = Errand.model_validate_json(body)
+        if not isinstance(errand.instructions, ChatInstructions):
+            raise ValueError(f"unknown errand instructions on errand: {errand}")
+        response = language_model.chat(errand.instructions)
+        logger.info(response)
+        logger.info(f"(*) completed errand: {errand.identifier}")
+    except Exception as error:
+        logger.error(f"(!) errand failed with error: {error}")
+
+
+def receive_diffusion_errand(ch, method, properties, body):
+    global diffusion_model
     try:
         logger.info(f"( ) starting errand: {body}")
         errand = Errand.model_validate_json(body)
         if isinstance(errand.instructions, TextToImageInstructions):
-            if not isinstance(model, StableDiffusion3TextToImage):
-                model = StableDiffusion3TextToImage()
-                logger.info(f"loaded stable diffusion 3 text to image model")
-            image = model.text_to_image(errand.instructions)
+            if not isinstance(diffusion_model, StableDiffusion3TextToImage):
+                logger.info(f"( ) initializing stable diffusion 3 text to image model")
+                diffusion_model = StableDiffusion3TextToImage()
+                logger.info(f"(*) initialized stable diffusion 3 text to image model")
+            image = diffusion_model.text_to_image(errand.instructions)
             logger.info(f"uploading image")
             upload_image_to_gallery(errand.identifier, image)
         elif isinstance(errand.instructions, ImageToImageInstructions):
-            if not isinstance(model, StableDiffusion3ImageToImage):
-                model = StableDiffusion3ImageToImage()
-                logger.info(f"loaded stable diffusion 3 image to image model")
-            image = model.image_to_image(errand.instructions)
+            if not isinstance(diffusion_model, StableDiffusion3ImageToImage):
+                logger.info(f"( ) initializing stable diffusion 3 image to image model")
+                diffusion_model = StableDiffusion3ImageToImage()
+                logger.info(f"(*) initialized stable diffusion 3 image to image model")
+            image = diffusion_model.image_to_image(errand.instructions)
             logger.info(f"uploading image")
             upload_image_to_gallery(errand.identifier, image)
-        elif isinstance(errand.instructions, ChatInstructions):
-            if not isinstance(model, Hermes3Chat):
-                model = Hermes3Chat()
-                logger.info(f"loaded hermes 3 chat model")
-            response = model.chat(errand.instructions)
-            logger.info(response)
         else:
             raise ValueError(f"unknown errand instructions on errand: {errand}")
         logger.info(f"(*) completed errand: {errand.identifier}")
@@ -67,10 +88,18 @@ def receive_errand(ch, method, properties, body):
 
 def main():
     with Rabbit(RABBIT_HOST, RABBIT_PORT, RABBIT_USERNAME, RABBIT_PASSWORD) as rabbit:
-        rabbit.channel.queue_declare(queue="errand")
-        rabbit.channel.basic_consume(queue="errand",
-                                     auto_ack=True,
-                                     on_message_callback=receive_errand)
+        if MODEL_TYPE == "diffusion":
+            rabbit.channel.queue_declare(queue="diffusion")
+            rabbit.channel.basic_consume(queue="diffusion",
+                                         auto_ack=True,
+                                         on_message_callback=receive_diffusion_errand)
+        elif MODEL_TYPE == "language":
+            rabbit.channel.queue_declare(queue="language")
+            rabbit.channel.basic_consume(queue="language",
+                                         auto_ack=True,
+                                         on_message_callback=receive_language_errand)
+        else:
+            raise ValueError(f"invalid model type specified in MODEL_TYPE env var: {MODEL_TYPE}")
         logger.info(f"setup complete, listening for errands")
         rabbit.channel.start_consuming()
 
