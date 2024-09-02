@@ -3,17 +3,19 @@ if [ ! -f "$INITIAL_BOOT_INDICATOR" ]; then
     sudo apt -y update
     sudo apt -y upgrade
 
+    sudo apt -y install python3.11
+
     # ssh
     echo "PasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/no_password.conf
     echo "PermitRootLogin no" | sudo tee /etc/ssh/sshd_config.d/no_root_login.conf
 
     # user
-    sudo adduser --disabled-password --gecos "" --shell /bin/bash --home /home/josiah josiah
-    sudo usermod -a -G sudo josiah
-    sudo echo "josiah ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/nopassword
-    sudo -u josiah mkdir -p /home/josiah/.ssh
-    sudo cp /root/.ssh/authorized_keys /home/josiah/.ssh/authorized_keys
-    sudo chown josiah:josiah /home/josiah/.ssh/authorized_keys
+    sudo adduser --disabled-password --gecos "" --shell /bin/bash --home /home/norn norn
+    sudo usermod -a -G sudo norn
+    sudo echo "norn ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/nopassword
+    sudo -u norn mkdir -p /home/norn/.ssh
+    sudo cp /root/.ssh/authorized_keys /home/norn/.ssh/authorized_keys
+    sudo chown norn:norn /home/norn/.ssh/authorized_keys
 
     # security
     sudo apt -y install fail2ban
@@ -21,7 +23,7 @@ if [ ! -f "$INITIAL_BOOT_INDICATOR" ]; then
     sudo systemctl enable fail2ban
 
     # docker
-    sudo usermod -aG docker josiah
+    sudo usermod -aG docker norn
     newgrp docker
     sudo systemctl enable docker.service
     sudo systemctl enable containerd.service
@@ -35,8 +37,6 @@ if [ ! -f "$INITIAL_BOOT_INDICATOR" ]; then
 }
 }
 EOF
-
-    sudo apt -y install python3.11
 
     sudo touch "$INITIAL_BOOT_INDICATOR"
     sudo reboot
