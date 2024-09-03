@@ -1,12 +1,11 @@
-import requests
 from PIL import Image
 from dotenv import load_dotenv
 from ratatosk_errands.model import TextToImageInstructions, ImageToImageInstructions
 
-from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage
+from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage, FluxTextToImage, FluxImageToImage
 
 
-def test_text_to_image():
+def test_stable_diffusion_3_text_to_image():
     load_dotenv("../norn.env")
     instructions = TextToImageInstructions(
         prompt="a breathtaking oil painting of a green pasture with rolling hills",
@@ -18,12 +17,12 @@ def test_text_to_image():
     )
     model = StableDiffusion3TextToImage()
     image = model.text_to_image(instructions)
-    image.save(f"data/text_to_image.png")
+    image.save(f"data/stable_diffusion_3_text_to_image.png")
 
 
-def test_image_to_image():
+def test_stable_diffusion_3_image_to_image():
     load_dotenv("../norn.env")
-    base_image = Image.open(f"data/text_to_image.png")
+    base_image = Image.open(f"data/stable_diffusion_3_text_to_image.png")
     instructions = ImageToImageInstructions(
         prompt="a flock of sheep",
         negative_prompt="",
@@ -35,4 +34,14 @@ def test_image_to_image():
     )
     model = StableDiffusion3ImageToImage()
     image = model.image_to_image(instructions, base_image)
-    image.save(f"data/image_to_image.png")
+    image.save(f"data/stable_diffusion_3_image_to_image.png")
+
+
+def test_flux_text_to_image():
+    load_dotenv("../norn.env")
+    instructions = TextToImageInstructions(
+        prompt="a breathtaking oil painting of a green pasture with rolling hills"
+    )
+    model = FluxTextToImage()
+    image = model.text_to_image(instructions)
+    image.save(f"data/flux_text_to_image.png")

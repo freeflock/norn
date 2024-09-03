@@ -21,7 +21,9 @@ GALLERY_KEY = os.getenv("GALLERY_KEY")
 
 MODEL_TYPE = os.getenv("MODEL_TYPE")
 logger.info(f"( ) initializing model: {MODEL_TYPE}")
-diffusion_model: StableDiffusion3TextToImage | StableDiffusion3ImageToImage | None = None
+diffusion_model: (StableDiffusion3TextToImage |
+                  StableDiffusion3ImageToImage |
+                  None) = None
 language_model: Hermes3Chat | None = None
 if MODEL_TYPE == "diffusion":
     diffusion_model = StableDiffusion3TextToImage()
