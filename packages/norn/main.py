@@ -108,7 +108,7 @@ def main():
             rabbit.channel.basic_consume(queue="text_to_image",
                                          auto_ack=True,
                                          on_message_callback=receive_text_to_image_errand)
-        if MODEL_TYPE == "image_to_image":
+        elif MODEL_TYPE == "image_to_image":
             rabbit.channel.queue_declare(queue="image_to_image")
             rabbit.channel.basic_consume(queue="image_to_image",
                                          auto_ack=True,
