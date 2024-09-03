@@ -1,0 +1,2 @@
+# this must be installed by running: pip install flash-attn==2.6.3 --no-build-isolation
+flash-attn==2.6.3

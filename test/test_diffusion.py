@@ -1,18 +1,16 @@
-import os
-
+import requests
 from PIL import Image
+from dotenv import load_dotenv
 from ratatosk_errands.model import TextToImageInstructions, ImageToImageInstructions
 
-from norn.diffusion import StableDiffusion3TextToImage, b64_encode_image, StableDiffusion3ImageToImage
-
-OUTPUT_DIR = "/tmp/pasture_test_output"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage
 
 
 def test_text_to_image():
+    load_dotenv("../norn.env")
     instructions = TextToImageInstructions(
-        prompt="a breathtaking oil painting of a green pasture with rolling hills and grazing sheep",
-        negative_prompt="goats",
+        prompt="a breathtaking oil painting of a green pasture with rolling hills",
+        negative_prompt="",
         num_inference_steps=28,
         guidance_scale=7.0,
         width=1024,
@@ -20,21 +18,21 @@ def test_text_to_image():
     )
     model = StableDiffusion3TextToImage()
     image = model.text_to_image(instructions)
-    image.save(f"{OUTPUT_DIR}/text_to_image.png")
+    image.save(f"data/text_to_image.png")
 
 
 def test_image_to_image():
-    base_image = Image.open(f"{OUTPUT_DIR}/text_to_image.png")
-    encoded_base_image = b64_encode_image(base_image)
+    load_dotenv("../norn.env")
+    base_image = Image.open(f"data/text_to_image.png")
     instructions = ImageToImageInstructions(
-        prompt="goats grazing in a pasture",
-        negative_prompt="sheep",
+        prompt="a flock of sheep",
+        negative_prompt="",
         num_inference_steps=28,
         guidance_scale=7.0,
         width=1024,
         height=1024,
-        encoded_base_image=encoded_base_image
+        base_image_identifier="image_to_image"
     )
     model = StableDiffusion3ImageToImage()
-    image = model.image_to_image(instructions)
-    image.save(f"{OUTPUT_DIR}/image_to_image.png")
+    image = model.image_to_image(instructions, base_image)
+    image.save(f"data/image_to_image.png")
