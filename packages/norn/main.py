@@ -34,15 +34,26 @@ else:
 logger.info(f"(*) initialized model")
 
 
-def upload_image_to_gallery(image_name: str, image: Image):
+def upload_image_to_gallery(identifier: str, image: Image):
     buffer = BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
     headers = {"gallery_key": GALLERY_KEY}
-    files = {"file": (f"{image_name}.png", buffer, "image/png")}
+    files = {"file": (f"{identifier}.png", buffer, "image/png")}
     response = requests.post(f"http://{GALLERY_HOST}:{GALLERY_PORT}/upload", files=files, headers=headers)
     if response.status_code != 200:
         raise RuntimeError(f"bad status code from gallery upload: {response.status_code}")
+
+
+def download_image_from_gallery(identifier: str) -> Image:
+    headers = {"gallery_key": GALLERY_KEY}
+    response = requests.post(f"http://{GALLERY_HOST}:{GALLERY_PORT}/download",
+                             json={"file_name": f"{identifier}.png"},
+                             headers=headers)
+    if response.status_code != 200:
+        raise RuntimeError(f"bad status code from gallery download: {response.status_code}")
+    image = Image.open(BytesIO(response.content))
+    return image
 
 
 def receive_language_errand(ch, method, properties, body):
@@ -76,7 +87,8 @@ def receive_diffusion_errand(ch, method, properties, body):
                 logger.info(f"( ) initializing stable diffusion 3 image to image model")
                 diffusion_model = StableDiffusion3ImageToImage()
                 logger.info(f"(*) initialized stable diffusion 3 image to image model")
-            image = diffusion_model.image_to_image(errand.instructions)
+            base_image = download_image_from_gallery(errand.instructions.base_image_identifier)
+            image = diffusion_model.image_to_image(errand.instructions, base_image)
             logger.info(f"uploading image")
             upload_image_to_gallery(errand.identifier, image)
         else:
