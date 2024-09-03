@@ -17,17 +17,18 @@ class Hermes3Chat:
         )
 
     def chat(self, instructions: ChatInstructions) -> str:
+        system_instructions = "" if instructions.system_instructions is None else instructions.system_instructions
         messages = [
-            {"role": "system", "content": instructions.system_instructions},
+            {"role": "system", "content": system_instructions},
             {"role": "user", "content": instructions.prompt}
         ]
         input_ids = self.tokenizer.apply_chat_template(messages, return_tensors="pt").to("cuda")
         generated_ids = self.model.generate(
             input_ids,
-            max_new_tokens=instructions.max_new_tokens,
-            temperature=instructions.temperature,
+            max_new_tokens=750 if instructions.max_new_tokens is None else instructions.max_new_tokens,
+            temperature=0.8 if instructions.temperature is None else instructions.temperature,
             do_sample=True,
-            repetition_penalty=instructions.repetition_penalty,
+            repetition_penalty=1.1 if instructions.repetition_penalty is None else instructions.repetition_penalty,
             eos_token_id=self.tokenizer.eos_token_id)
         response = self.tokenizer.decode(
             generated_ids[0][input_ids.shape[-1]:],

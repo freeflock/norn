@@ -28,7 +28,7 @@ model: (StableDiffusion3TextToImage |
         None) = None
 if MODEL_TYPE == "text_to_image":
     model = FluxTextToImage()
-if MODEL_TYPE == "image_to_image":
+elif MODEL_TYPE == "image_to_image":
     model = StableDiffusion3ImageToImage()
 elif MODEL_TYPE == "chat":
     model = Hermes3Chat()
