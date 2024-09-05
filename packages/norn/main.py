@@ -1,3 +1,4 @@
+import json
 import os
 from io import BytesIO
 
@@ -20,22 +21,25 @@ GALLERY_HOST = os.getenv("GALLERY_HOST")
 GALLERY_PORT = int(os.getenv("GALLERY_PORT"))
 GALLERY_KEY = os.getenv("GALLERY_KEY")
 
-MODEL_TYPE = os.getenv("MODEL_TYPE")
-logger.info(f"( ) initializing model: {MODEL_TYPE}")
+MODEL_TYPES = json.loads(os.getenv("MODEL_TYPES"))
+logger.info(f"( ) initializing norn with model types: {MODEL_TYPES}")
 model: (StableDiffusion3TextToImage |
         StableDiffusion3ImageToImage |
         FluxTextToImage |
         Hermes3Chat |
         None) = None
-if MODEL_TYPE == "text_to_image":
-    model = FluxTextToImage()
-elif MODEL_TYPE == "image_to_image":
-    model = StableDiffusion3ImageToImage()
-elif MODEL_TYPE == "chat":
-    model = Hermes3Chat()
-else:
-    raise ValueError(f"invalid model type specified in MODEL_TYPE env var: {MODEL_TYPE}")
-logger.info(f"(*) initialized model")
+
+choice_text_to_image_model = FluxTextToImage
+choice_image_to_image_model = StableDiffusion3ImageToImage
+choice_chat_model = Hermes3Chat
+
+if "text_to_image" in MODEL_TYPES:
+    model = choice_text_to_image_model()
+if "image_to_image" in MODEL_TYPES:
+    model = choice_image_to_image_model()
+if "chat" in MODEL_TYPES:
+    model = choice_chat_model()
+logger.info(f"(*) initialized model types")
 
 
 def upload_image_to_gallery(identifier: str, image: Image):
@@ -61,11 +65,16 @@ def download_image_from_gallery(identifier: str) -> Image:
 
 
 def receive_chat_errand(channel, method, properties, body):
+    global model
     try:
         logger.info(f"( ) receiving errand: {body}")
         errand = Errand.model_validate_json(body)
         if not isinstance(errand.instructions, ChatInstructions):
             raise ValueError(f"unknown errand instructions on errand: {errand}")
+
+        if not isinstance(model, choice_chat_model):
+            logger.info(f"swapping model")
+            model = choice_chat_model()
 
         logger.info(f"running inference")
         reply_message = model.chat(errand.instructions)
@@ -75,18 +84,24 @@ def receive_chat_errand(channel, method, properties, body):
         echo = Echo(errand=errand, reply=reply)
         channel.basic_publish(exchange="", routing_key="echo", body=echo.model_dump_json())
 
-        channel.basic_ack(delivery_tag=method.delivery_tag)
         logger.info(f"(*) completed errand: {errand.errand_identifier}")
     except Exception as error:
         logger.error(f"(!) errand failed with error: {error}")
+    finally:
+        channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def receive_text_to_image_errand(channel, method, properties, body):
+    global model
     try:
         logger.info(f"( ) receiving errand: {body}")
         errand = Errand.model_validate_json(body)
         if not isinstance(errand.instructions, TextToImageInstructions):
             raise ValueError(f"unknown errand instructions on errand: {errand}")
+
+        if not isinstance(model, choice_text_to_image_model):
+            logger.info(f"swapping model")
+            model = choice_text_to_image_model()
 
         logger.info(f"running inference")
         image = model.text_to_image(errand.instructions)
@@ -99,18 +114,24 @@ def receive_text_to_image_errand(channel, method, properties, body):
         echo = Echo(errand=errand, reply=reply)
         channel.basic_publish(exchange="", routing_key="echo", body=echo.model_dump_json())
 
-        channel.basic_ack(delivery_tag=method.delivery_tag)
         logger.info(f"(*) completed errand: {errand.errand_identifier}")
     except Exception as error:
         logger.error(f"(!) errand failed with error: {error}")
+    finally:
+        channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def receive_image_to_image_errand(channel, method, properties, body):
+    global model
     try:
         logger.info(f"( ) receiving errand: {body}")
         errand = Errand.model_validate_json(body)
         if not isinstance(errand.instructions, ImageToImageInstructions):
             raise ValueError(f"unknown errand instructions on errand: {errand}")
+
+        if not isinstance(model, choice_image_to_image_model):
+            logger.info(f"swapping model")
+            model = choice_image_to_image_model()
 
         logger.info(f"downloading base image")
         base_image = download_image_from_gallery(errand.instructions.base_image_identifier)
@@ -126,10 +147,11 @@ def receive_image_to_image_errand(channel, method, properties, body):
         echo = Echo(errand=errand, reply=reply)
         channel.basic_publish(exchange="", routing_key="echo", body=echo.model_dump_json())
 
-        channel.basic_ack(delivery_tag=method.delivery_tag)
         logger.info(f"(*) completed errand: {errand.errand_identifier}")
     except Exception as error:
         logger.error(f"(!) errand failed with error: {error}")
+    finally:
+        channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
 def main():
@@ -139,14 +161,12 @@ def main():
         rabbit.channel.queue_declare(queue="text_to_image")
         rabbit.channel.queue_declare(queue="image_to_image")
         rabbit.channel.queue_declare(queue="chat")
-        if MODEL_TYPE == "text_to_image":
+        if "text_to_image" in MODEL_TYPES:
             rabbit.channel.basic_consume(queue="text_to_image", on_message_callback=receive_text_to_image_errand)
-        elif MODEL_TYPE == "image_to_image":
+        if "image_to_image" in MODEL_TYPES:
             rabbit.channel.basic_consume(queue="image_to_image", on_message_callback=receive_image_to_image_errand)
-        elif MODEL_TYPE == "chat":
+        if "chat" in MODEL_TYPES:
             rabbit.channel.basic_consume(queue="chat", on_message_callback=receive_chat_errand)
-        else:
-            raise ValueError(f"invalid model type specified in MODEL_TYPE env var: {MODEL_TYPE}")
         logger.info(f"setup complete, listening for errands")
         rabbit.channel.start_consuming()
 
