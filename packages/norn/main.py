@@ -76,7 +76,7 @@ def receive_chat_errand(channel, method, properties, body):
         channel.basic_publish(exchange="", routing_key="echo", body=echo.model_dump_json())
 
         channel.basic_ack(delivery_tag=method.delivery_tag)
-        logger.info(f"(*) completed errand: {errand.identifier}")
+        logger.info(f"(*) completed errand: {errand.errand_identifier}")
     except Exception as error:
         logger.error(f"(!) errand failed with error: {error}")
 
@@ -100,7 +100,7 @@ def receive_text_to_image_errand(channel, method, properties, body):
         channel.basic_publish(exchange="", routing_key="echo", body=echo.model_dump_json())
 
         channel.basic_ack(delivery_tag=method.delivery_tag)
-        logger.info(f"(*) completed errand: {errand.identifier}")
+        logger.info(f"(*) completed errand: {errand.errand_identifier}")
     except Exception as error:
         logger.error(f"(!) errand failed with error: {error}")
 
@@ -127,7 +127,7 @@ def receive_image_to_image_errand(channel, method, properties, body):
         channel.basic_publish(exchange="", routing_key="echo", body=echo.model_dump_json())
 
         channel.basic_ack(delivery_tag=method.delivery_tag)
-        logger.info(f"(*) completed errand: {errand.identifier}")
+        logger.info(f"(*) completed errand: {errand.errand_identifier}")
     except Exception as error:
         logger.error(f"(!) errand failed with error: {error}")
 
