@@ -12,7 +12,9 @@ from ratatosk_errands.adapter import Rabbit
 from ratatosk_errands.model import Errand, Echo, TextToImageInstructions, ImageToImageInstructions, ChatInstructions, \
     DiffusionReply, ChatReply
 
-load_dotenv(f"{os.path.dirname(os.path.abspath(__file__))}/../../norn.env")
+ENV_FILE_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../../norn.env"
+logger.info(f"( ) loading env file from: {ENV_FILE_PATH}")
+load_dotenv(ENV_FILE_PATH)
 
 RABBIT_HOST = os.getenv("RABBIT_HOST")
 RABBIT_PORT = int(os.getenv("RABBIT_PORT"))
