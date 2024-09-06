@@ -9,3 +9,4 @@ bitsandbytes==0.42.0
 ninja==1.11.1.1
 wheel==0.44.0
 setuptools==74.1.2
+python-dotenv==1.0.1

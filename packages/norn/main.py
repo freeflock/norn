@@ -4,13 +4,15 @@ from io import BytesIO
 
 import requests
 from PIL import Image
+from dotenv import load_dotenv
 from loguru import logger
+from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage, FluxTextToImage
+from norn.language import Hermes3Chat
 from ratatosk_errands.adapter import Rabbit
 from ratatosk_errands.model import Errand, Echo, TextToImageInstructions, ImageToImageInstructions, ChatInstructions, \
     DiffusionReply, ChatReply
 
-from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage, FluxTextToImage
-from norn.language import Hermes3Chat
+load_dotenv(f"{os.path.dirname(os.path.abspath(__file__))}/../../norn.env")
 
 RABBIT_HOST = os.getenv("RABBIT_HOST")
 RABBIT_PORT = int(os.getenv("RABBIT_PORT"))
