@@ -4,6 +4,7 @@ if [ ! -f "$INITIAL_BOOT_INDICATOR" ]; then
     sudo apt -y upgrade
 
     sudo apt -y install python3.11
+    sudo apt -y install python3.11-venv
 
     # ssh
     echo "PasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/no_password.conf
