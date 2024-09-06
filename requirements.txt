@@ -7,3 +7,5 @@ ratatosk-errands==0.17
 loguru==0.7.2
 bitsandbytes==0.42.0
 ninja==1.11.1.1
+wheel==0.44.0
+setuptools==74.1.2
