@@ -52,16 +52,20 @@ def upload_image_to_gallery(identifier: str, image: Image):
     buffer.seek(0)
     headers = {"gallery_key": GALLERY_KEY}
     files = {"file": (f"{identifier}.png", buffer, "image/png")}
-    response = requests.post(f"http://{GALLERY_HOST}:{GALLERY_PORT}/upload", files=files, headers=headers)
+    response = requests.post(f"https://{GALLERY_HOST}:{GALLERY_PORT}/upload",
+                             files=files,
+                             headers=headers,
+                             verify=False)
     if response.status_code != 200:
         raise RuntimeError(f"bad status code from gallery upload: {response.status_code}")
 
 
 def download_image_from_gallery(identifier: str) -> Image:
     headers = {"gallery_key": GALLERY_KEY}
-    response = requests.post(f"http://{GALLERY_HOST}:{GALLERY_PORT}/download",
+    response = requests.post(f"https://{GALLERY_HOST}:{GALLERY_PORT}/download",
                              json={"file_name": f"{identifier}.png"},
-                             headers=headers)
+                             headers=headers,
+                             verify=False)
     if response.status_code != 200:
         raise RuntimeError(f"bad status code from gallery download: {response.status_code}")
     image = Image.open(BytesIO(response.content))
