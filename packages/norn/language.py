@@ -43,11 +43,16 @@ class Hermes3Chat:
 class ReflectionChat:
     def __init__(self):
         self.tokenizer = AutoTokenizer.from_pretrained("mattshumer/Reflection-Llama-3.1-70B")
+        quantization = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True)
         self.model = LlamaForCausalLM.from_pretrained(
             "mattshumer/Reflection-Llama-3.1-70B",
             torch_dtype=torch.float16,
             return_dict=True,
-            device_map="auto"
+            device_map="auto",
+            quantization_config=quantization
         )
 
     def chat(self, instructions: ChatInstructions) -> str:
