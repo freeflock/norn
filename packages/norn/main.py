@@ -6,11 +6,12 @@ import requests
 from PIL import Image
 from dotenv import load_dotenv
 from loguru import logger
-from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage, FluxTextToImage
-from norn.language import Hermes3Chat
 from ratatosk_errands.adapter import Rabbit
 from ratatosk_errands.model import Errand, Echo, TextToImageInstructions, ImageToImageInstructions, ChatInstructions, \
     DiffusionReply, ChatReply
+
+from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage, FluxTextToImage
+from norn.language import Hermes3Chat, ReflectionChat
 
 ENV_FILE_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../../norn.env"
 logger.info(f"( ) loading env file from: {ENV_FILE_PATH}")
@@ -31,11 +32,12 @@ model: (StableDiffusion3TextToImage |
         StableDiffusion3ImageToImage |
         FluxTextToImage |
         Hermes3Chat |
+        ReflectionChat |
         None) = None
 
 choice_text_to_image_model = FluxTextToImage
 choice_image_to_image_model = StableDiffusion3ImageToImage
-choice_chat_model = Hermes3Chat
+choice_chat_model = ReflectionChat
 
 if "text_to_image" in MODEL_TYPES:
     model = choice_text_to_image_model()
