@@ -17,6 +17,8 @@ ENV_FILE_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../../norn.env"
 logger.info(f"( ) loading env file from: {ENV_FILE_PATH}")
 load_dotenv(ENV_FILE_PATH)
 
+os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+
 RABBIT_HOST = os.getenv("RABBIT_HOST")
 RABBIT_PORT = int(os.getenv("RABBIT_PORT"))
 RABBIT_USERNAME = os.getenv("RABBIT_USERNAME")
