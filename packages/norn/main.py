@@ -10,7 +10,7 @@ from ratatosk_errands.adapter import Rabbit
 from ratatosk_errands.model import Errand, Echo, TextToImageInstructions, ImageToImageInstructions, ChatInstructions, \
     DiffusionReply, ChatReply
 
-from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage, FluxTextToImage
+from norn.diffusion import StableDiffusion3TextToImage, StableDiffusion3ImageToImage, FluxTextToImage, FluxImageToImage
 from norn.language import Hermes3Chat, ReflectionChat
 
 ENV_FILE_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../../norn.env"
@@ -33,12 +33,13 @@ logger.info(f"( ) initializing norn with model types: {MODEL_TYPES}")
 model: (StableDiffusion3TextToImage |
         StableDiffusion3ImageToImage |
         FluxTextToImage |
+        FluxImageToImage |
         Hermes3Chat |
         ReflectionChat |
         None) = None
 
 choice_text_to_image_model = FluxTextToImage
-choice_image_to_image_model = StableDiffusion3ImageToImage
+choice_image_to_image_model = FluxImageToImage
 choice_chat_model = ReflectionChat
 
 if "text_to_image" in MODEL_TYPES:
