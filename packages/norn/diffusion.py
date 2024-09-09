@@ -77,6 +77,8 @@ class FluxImageToImage:
             image=base_image,
             strength=0.95 if instructions.strength is None else instructions.strength,
             num_inference_steps=50 if instructions.num_inference_steps is None else instructions.num_inference_steps,
-            guidance_scale=0.0 if instructions.guidance_scale is None else instructions.guidance_scale
+            guidance_scale=0.0 if instructions.guidance_scale is None else instructions.guidance_scale,
+            width=1024 if instructions.width is None else instructions.width,
+            height=1024 if instructions.height is None else instructions.height
         ).images[0]
         return image
