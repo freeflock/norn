@@ -1,5 +1,5 @@
-# diffusers[torch]==0.30.2
-diffusers@ git+https://github.com/huggingface/diffusers
+diffusers[torch]==0.30.2
+#diffusers@ git+https://github.com/huggingface/diffusers
 transformers==4.44.2
 huggingface_hub[hf_transfer]==0.24.6
 sentencepiece==0.2.0
