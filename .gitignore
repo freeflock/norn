@@ -14,5 +14,3 @@ __pycache__
 
 # env
 **/*.env
-
-test/data
