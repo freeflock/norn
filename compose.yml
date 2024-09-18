@@ -5,7 +5,7 @@ services:
       context: .
     env_file: "./norn.env"
     environment:
-      TRANSFORMERS_CACHE: /atelier/cache
+      HF_HOME: /atelier/cache
     volumes:
       - norn-cache:/atelier/cache
     deploy:
