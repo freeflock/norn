@@ -7,7 +7,7 @@ services:
     environment:
       HF_HOME: /atelier/cache
     volumes:
-      - norn-cache:/atelier/cache
+      - cache:/atelier/cache
     deploy:
       resources:
         reservations:
@@ -17,5 +17,5 @@ services:
               capabilities: [ gpu ]
 
 volumes:
-  norn-cache:
+  cache:
     external: false
