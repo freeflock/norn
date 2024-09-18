@@ -1,0 +1,13 @@
+services:
+  norn:
+    image: josiahdc/norn:0.1
+    build:
+      context: .
+    env_file: "./norn.env"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
