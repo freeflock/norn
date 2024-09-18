@@ -4,6 +4,10 @@ services:
     build:
       context: .
     env_file: "./norn.env"
+    environment:
+      TRANSFORMERS_CACHE: /atelier/cache
+    volumes:
+      - norn-cache:/atelier/cache
     deploy:
       resources:
         reservations:
@@ -11,3 +15,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [ gpu ]
+
+volumes:
+  norn-cache:
+    external: false
